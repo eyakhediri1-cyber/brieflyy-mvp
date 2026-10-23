@@ -8,7 +8,7 @@ from pypdf import PdfReader
 
 load_dotenv()
 
-MODEL = "gemini-3.8-flash"
+MODEL = "gemini-3.5-flash"
 MAX_CHARS = 15000
 
 PROMPT = """Tu es un extracteur de CV. À partir du texte ci-dessous, réponds UNIQUEMENT
