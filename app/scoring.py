@@ -1,12 +1,6 @@
 import json
-import os
 
-from dotenv import load_dotenv
-from google import genai
-
-load_dotenv()
-
-MODEL = "gemini-3.5-flash"  # même valeur que dans app/main.py
+from app.llm import generate_json
 
 PROMPT = """Tu compares le profil d'un candidat à une offre d'emploi.
 Réponds UNIQUEMENT avec un objet JSON, sans texte autour, sans balises Markdown, avec cette structure :
@@ -32,33 +26,17 @@ OFFER_JSON
 
 
 def score_offer(profile: dict, offer: dict) -> dict:
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY est absente. Vérifie ton fichier .env.")
-
     offer_data = {
         "titre": offer.get("title"),
         "entreprise": offer.get("company"),
         "lieu": offer.get("location"),
         "description": (offer.get("description") or "")[:4000],
     }
-
     prompt = (
         PROMPT
         .replace("PROFILE_JSON", json.dumps(profile, ensure_ascii=False, indent=2))
         .replace("OFFER_JSON", json.dumps(offer_data, ensure_ascii=False, indent=2))
     )
-
-    client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt,
-        config={"response_mime_type": "application/json"},
-    )
-
-    raw = response.text.strip()
-    if raw.startswith("```"):
-        raw = raw.strip("`").removeprefix("json").strip()
-    result = json.loads(raw)
+    result = generate_json(prompt)
     result["score"] = max(0, min(100, int(result.get("score", 0))))
     return result
