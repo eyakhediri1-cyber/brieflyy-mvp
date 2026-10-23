@@ -74,6 +74,19 @@ def _perm(order, size: int) -> list[int]:
     return seen + [i for i in range(size) if i not in seen]
 
 
+def _clean_keywords(keywords: list[str], company: str | None = None) -> list[str]:
+    """Retire le nom de l'entreprise, les doublons et les mots contenus dans un autre mot-clé."""
+    company_l = (company or "").strip().lower()
+    candidates = [k for k in keywords if k.lower() != company_l]
+    result = []
+    for k in candidates:
+        if any(o.lower() != k.lower() and _mentions(o, k) for o in candidates):
+            continue  # "Power" ou "Data" sont couverts par "Power BI" ou "Data Analyst"
+        if k.lower() not in [r.lower() for r in result]:
+            result.append(k)
+    return result
+
+
 def _call_model(profile: dict, offer: dict) -> dict:
     indexed = {
         "competences": [{"index": i, "valeur": s} for i, s in enumerate(profile.get("competences") or [])],
@@ -111,10 +124,13 @@ def _rewrite_missions(source_missions: list, item: dict, terms: list[str]):
     for s in _perm(list(proposed.keys()), len(source_missions)):
         text = proposed.get(s)
         if isinstance(text, str) and text.strip() and is_faithful(text, source_missions[s], terms):
-            result.append(text.strip())
+            new = text.strip()
+        else:
+            new = source_missions[s]
+        result.append(new)
+        if new != source_missions[s]:
             report["reformulees"] += 1
         else:
-            result.append(source_missions[s])
             report["conservees"] += 1
     return result, report
 
@@ -124,14 +140,12 @@ def adapt_cv(profile: dict, offer: dict):
     skills = profile.get("competences") or []
     exps = profile.get("experiences") or []
 
-    try:
-        data = _call_model(profile, offer)
-    except (ValueError, KeyError, TypeError, RuntimeError):
-        data = {}  # réponse inexploitable : on garde l'ordre d'origine
+    data = _call_model(profile, offer)  # erreur remontée, jamais masquée
     if not isinstance(data, dict):
         data = {}
 
-    keywords = [k.strip() for k in (data.get("offer_keywords") or []) if isinstance(k, str) and k.strip()]
+    raw_keywords = [k.strip() for k in (data.get("offer_keywords") or []) if isinstance(k, str) and k.strip()]
+    keywords = _clean_keywords(raw_keywords, offer.get("company"))
     terms = [s for s in skills if isinstance(s, str)] + keywords
 
     adapted = copy.deepcopy(profile)
@@ -143,7 +157,7 @@ def adapt_cv(profile: dict, offer: dict):
             proposed.setdefault(item["index"], item)
 
     keep = [i for i in proposed if 0 <= i < len(exps) and proposed[i].get("relevant") is True]
-    rest = [i for i in range(len(exps)) if i not in keep]  # sans rapport ou non citées : en dernier
+    rest = [i for i in range(len(exps)) if i not in keep]
 
     report = {"reformulees": 0, "conservees": 0}
     new_exps = []
@@ -170,7 +184,7 @@ def ats_report(cv: dict, keywords: list[str]) -> dict:
     return {"score": score, "matched": matched, "missing": missing}
 
 
-def build_adapted_cv(profile: dict, offer: dict) -> dict:
+def build_adapted_cv(profile: dict, offer: dict, with_scores: bool = True) -> dict:
     adapted, report, keywords = adapt_cv(profile, offer)
     return {
         "cv": adapted,
@@ -178,6 +192,6 @@ def build_adapted_cv(profile: dict, offer: dict) -> dict:
         "keywords": keywords,
         "ats_original": ats_report(profile, keywords),
         "ats_adapted": ats_report(adapted, keywords),
-        "match_original": score_offer(profile, offer)["score"],
-        "match_adapted": score_offer(adapted, offer)["score"],
+        "match_original": score_offer(profile, offer)["score"] if with_scores else None,
+        "match_adapted": score_offer(adapted, offer)["score"] if with_scores else None,
     }

@@ -18,7 +18,7 @@ def generate_json(prompt: str) -> dict:
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY est absente. Vérifie ton fichier .env.")
 
-    client = genai.Client(api_key=api_key)
+    client = genai.Client(api_key=api_key, http_options={"timeout": 120000})
     last_error = None
     for model in MODELS:
         for _ in range(ATTEMPTS_PER_MODEL):
@@ -26,11 +26,11 @@ def generate_json(prompt: str) -> dict:
                 response = client.models.generate_content(
                     model=model,
                     contents=prompt,
-                    config={"response_mime_type": "application/json"},
+                    config={"response_mime_type": "application/json", "temperature": 0},
                 )
             except APIError as e:
                 last_error = e
-                if e.code not in (429, 503):
+                if e.code not in (429, 503, 504):
                     raise  # erreur réelle (clé, modèle inexistant) : inutile de réessayer
                 time.sleep(3)
                 continue
