@@ -9,7 +9,7 @@ from pathlib import Path
 import streamlit as st
 
 from app.adaptation import build_adapted_cv
-from app.jobs import fetch_remotive_jobs
+from app.jobs import fetch_remotive_jobs, fetch_adzuna_jobs
 from app.cv import profile_from_pdf
 from app.cv_pdf import render_cv_pdf
 
@@ -73,7 +73,10 @@ def cv_markdown(cv: dict) -> str:
 
 if st.button("Search offers"):
     try:
-        st.session_state["offers"] = fetch_remotive_jobs(search, limit)
+        st.session_state["offers"] = (
+            fetch_remotive_jobs(search, limit)
+            + fetch_adzuna_jobs(search, limit)
+        )
     except Exception as e:
         st.error(f"Could not load offers: {e}")
 
