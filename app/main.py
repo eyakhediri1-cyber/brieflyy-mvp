@@ -68,6 +68,7 @@ if uploaded and st.button("Analyser le CV"):
                 profile = extract_profile(text)
                 st.success("Profil extrait.")
                 st.json(profile)
+                st.download_button('Download profile JSON', json.dumps(profile, ensure_ascii=False, indent=2), file_name='profile.json', mime='application/json')
                 with st.expander("Texte brut extrait du PDF"):
                     st.text(text[:MAX_CHARS])
         except json.JSONDecodeError:
