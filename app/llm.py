@@ -51,11 +51,22 @@ def _grok(prompt: str) -> dict:
     return _parse(r.choices[0].message.content)
 
 
+def _groq(prompt: str) -> dict:
+    client = OpenAI(api_key=os.environ["GROQ_API_KEY"], base_url="https://api.groq.com/openai/v1", timeout=30)
+    r = client.chat.completions.create(
+        model="openai/gpt-oss-120b",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
+        response_format={"type": "json_object"},
+    )
+    return _parse(r.choices[0].message.content)
+
+
 def _providers():
-    """Fournisseurs dans l'ordre d'essai. Grok n'est utilisé que si sa clé est présente."""
+    """Fournisseurs dans l'ordre d'essai. Groq n'est utilisé que si sa clé est présente."""
     yield "gemini", _gemini
-    if os.getenv("XAI_API_KEY"):
-        yield "grok", _grok
+    if os.getenv("GROQ_API_KEY"):
+        yield "groq", _groq
 
 
 def generate_json(prompt: str) -> dict:
