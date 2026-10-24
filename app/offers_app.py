@@ -256,17 +256,20 @@ st.markdown(
 
     /* Hide Streamlit's developer toolbar and Deploy prompt for a cleaner app UI.
        This is a visual CSS hide; Streamlit may change these selectors between versions. */
-    [data-testid="stToolbar"],
-    [data-testid="stStatusWidget"],
-    [data-testid="stDecoration"],
-    [data-testid="stDeployButton"],
-    #MainMenu { display: none !important; visibility: hidden !important; }
-    header[data-testid="stHeader"] { display: none !important; visibility: hidden !important; }
+    /* Hide only the Deploy prompt; keep Streamlit navigation controls available. */
+    [data-testid="stDeployButton"] { display: none !important; visibility: hidden !important; }
+    [data-testid="stStatusWidget"] { display: none !important; }
+    [data-testid="stDecoration"] { display: none !important; }
+    /* Keep the header and sidebar collapse/expand button visible. */
+    header[data-testid="stHeader"] { background: transparent !important; visibility: visible !important; display: flex !important; }
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="stSidebarCollapsedControl"] { display: flex !important; visibility: visible !important; opacity: 1 !important; }
+    /* Sidebar stays available on the workspace screen. */
+    .stApp:not(:has(.landing-shell)) [data-testid="stSidebar"] { display: block !important; visibility: visible !important; }
 
     /* Cinematic landing page inspired by the supplied premium SaaS reference */
     /* True edge-to-edge landing: no centered card, no browser-like frame */
     .stApp:has(.landing-shell) { background:#07070B; overflow:hidden; }
-    .stApp:has(.landing-shell) header[data-testid="stHeader"],
     .stApp:has(.landing-shell) [data-testid="stToolbar"],
     .stApp:has(.landing-shell) [data-testid="stDecoration"] { display:none !important; }
     .stApp:has(.landing-shell) [data-testid="stSidebar"] { display:none !important; }
@@ -556,9 +559,9 @@ with st.sidebar:
     search = st.text_input("Role, skill or keyword", value="python", placeholder="e.g. Data Analyst")
     limit = st.slider("Offers per source", 1, 10, 3)
     st.divider()
-    st.markdown("#### Advanced")
-    demo_mode = st.checkbox("Demo mode", value=False, help="Use saved results only; do not make a new AI call.")
-    st.caption("Demo mode uses saved analyses only. Turn it off to analyse a new offer.")
+
+# Demo mode is disabled by default and its control is hidden from the interface.
+demo_mode = False
 
 # How it works
 st.markdown("### A simpler way to job hunt")
