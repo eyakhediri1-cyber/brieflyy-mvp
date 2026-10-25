@@ -519,7 +519,6 @@ if st.session_state["brieflyy_page"] == "landing":
           <div class="floating-card floating-right"><div class="floating-icon">↗</div><div><b>CV match score</b><small>Understand your fit for each role</small></div></div>
           <div class="floating-card floating-bottom-left"><div class="floating-icon">✓</div><div><b>Authentic adaptation</b><small>Your experience stays yours</small></div></div>
           <div class="floating-card floating-bottom-right"><div class="floating-icon">◎</div><div><b>Interview-ready</b><small>Take the next step with confidence</small></div></div>
-          <div class="landing-footer">© 2026 <strong>Brieflyy</strong> · AI Career Copilot · Your next step, made clearer.</div>
         </div>""",
         unsafe_allow_html=True,
     )
@@ -529,6 +528,7 @@ if st.session_state["brieflyy_page"] == "landing":
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('<div class="landing-disclaimer">Your CV stays under your control. Nothing is sent to an employer without your action.</div>', unsafe_allow_html=True)
+    render_brieflyy_footer()
     st.stop()
 
 # ── Header ───────────────────────────────────────────────────────────────────
