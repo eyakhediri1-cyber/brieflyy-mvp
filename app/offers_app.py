@@ -286,7 +286,7 @@ st.markdown(
     .landing-mark { display:grid; place-items:center; width:38px; height:38px; border-radius:12px; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.28); color:white; font:800 21px 'Manrope',sans-serif; letter-spacing:-2px; }
     .landing-brand-name { color:#fff; font:800 1.25rem 'Manrope',sans-serif; letter-spacing:-.05em; }
     .landing-brand-sub { color:#C4CCE8; font-size:.72rem; margin-top:1px; }
-    .landing-nav-links { display:flex; align-items:center; gap:clamp(12px,2vw,28px); color:#E5E5EC; font-size:.78rem; }
+    .landing-nav-links { display:none !important; }
     .landing-nav-links span:last-child { border:1px solid rgba(163,112,255,.8); border-radius:9px; padding:10px 14px; box-shadow:0 0 18px rgba(124,58,237,.18); }
     .landing-content { position:relative; z-index:2; text-align:center; max-width:1000px; margin:0 auto; padding:clamp(70px,12vh,140px) 24px 145px; }
     .landing-eyebrow { display:inline-block; color:#D8C7FF; font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.16em; border:1px solid rgba(193,164,255,.30); background:rgba(94,49,154,.18); padding:8px 13px; border-radius:999px; }
@@ -458,10 +458,33 @@ st.markdown(
     .stApp:not(:has(.landing-shell)) [data-testid="stSidebar"] [data-testid="stSlider"] [role="slider"] {
       border-color:#E9D8FF !important;
     }
+
+    /* Brieflyy footer: naturally placed at the bottom of each page. */
+    .brieflyy-footer {
+      width:100%; box-sizing:border-box; margin-top:64px; padding:22px 12px 18px;
+      border-top:1px solid rgba(205,180,255,.18); text-align:center;
+      color:#B8ADC9; font-size:.82rem; letter-spacing:.01em;
+    }
+    .brieflyy-footer strong { color:#E8D8FF; font-weight:700; }
+    .landing-footer {
+      position:absolute; left:0; right:0; bottom:0; z-index:2;
+      padding:18px 22px max(18px, env(safe-area-inset-bottom));
+      border-top:1px solid rgba(255,255,255,.10); text-align:center;
+      color:rgba(255,255,255,.72); font-size:.78rem;
+      background:linear-gradient(180deg, transparent, rgba(5,5,9,.55));
+    }
+    @media(max-width:560px) { .landing-footer { padding:14px 16px max(14px, env(safe-area-inset-bottom)); font-size:.68rem; } }
     </style>
     """,
     unsafe_allow_html=True,
 )
+
+def render_brieflyy_footer():
+    st.markdown(
+        '<div class="brieflyy-footer">© 2026 <strong>Brieflyy</strong> · AI Career Copilot · Your next step, made clearer.</div>',
+        unsafe_allow_html=True,
+    )
+
 
 # ── Two-page experience ──────────────────────────────────────────────────────
 if "brieflyy_page" not in st.session_state:
@@ -496,6 +519,7 @@ if st.session_state["brieflyy_page"] == "landing":
           <div class="floating-card floating-right"><div class="floating-icon">↗</div><div><b>CV match score</b><small>Understand your fit for each role</small></div></div>
           <div class="floating-card floating-bottom-left"><div class="floating-icon">✓</div><div><b>Authentic adaptation</b><small>Your experience stays yours</small></div></div>
           <div class="floating-card floating-bottom-right"><div class="floating-icon">◎</div><div><b>Interview-ready</b><small>Take the next step with confidence</small></div></div>
+          <div class="landing-footer">© 2026 <strong>Brieflyy</strong> · AI Career Copilot · Your next step, made clearer.</div>
         </div>""",
         unsafe_allow_html=True,
     )
@@ -689,6 +713,7 @@ if not uploaded:
         """,
         unsafe_allow_html=True,
     )
+    render_brieflyy_footer()
     st.stop()
 
 try:
@@ -696,6 +721,7 @@ try:
         profile = profile_from_pdf(uploaded.getvalue())
 except Exception as e:
     st.error(f"Could not read your CV: {e}")
+    render_brieflyy_footer()
     st.stop()
 
 st.success(f"CV loaded: {profile.get('nom') or 'your profile'}")
@@ -719,6 +745,7 @@ if search_clicked:
 offers = st.session_state.get("offers", [])
 if not offers:
     st.info("Your results will appear here. Select **Search offers** to discover available roles.")
+    render_brieflyy_footer()
     st.stop()
 
 st.markdown(f"**{len(offers)} opportunities found**")
@@ -759,3 +786,5 @@ for i, offer in enumerate(offers):
         elif result:
             st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
             show_result(profile, offer, result)
+
+render_brieflyy_footer()
