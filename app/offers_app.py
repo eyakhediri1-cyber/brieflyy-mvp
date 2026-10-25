@@ -676,6 +676,7 @@ def show_result(profile: dict, offer: dict, result: dict):
             "⬇  Download adapted CV (PDF)",
             pdf_bytes,
             file_name="CV_adapted.pdf",
+            key=f"dl_{hashlib.sha256(offer['url'].encode()).hexdigest()[:12]}",
             mime="application/pdf",
             use_container_width=True,
         )
